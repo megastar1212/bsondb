@@ -1,0 +1,20 @@
+{
+  "name": "bsondb",
+  "version": "2.0.0",
+  "description": "Base de datos con bson usando modelos.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "bson",
+    "database",
+    "db"
+  ],
+  "author": "MegaStar",
+  "license": "ISC",
+  "dependencies": {
+    "bson": "^4.0.3",
+    "path": "^0.12.7"
+  }
+}
