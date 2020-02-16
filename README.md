@@ -3,8 +3,7 @@
   <p>Base de datos usando bson basado en modelos.</p>
 </div>
 
-## Instalacion:
-
+### Instalación:
 ```shell
 npm install bsondb --save
 ```
