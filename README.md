@@ -371,4 +371,4 @@ NivelModel.remove((modelo) => modelo.id == 'algunaID', (eliminado) => {
   }
 })
 ```
-
+**@ Valor de Retorno** ── Nada, es un callback.
