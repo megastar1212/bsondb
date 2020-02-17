@@ -3,69 +3,71 @@
   <p>Base de datos usando bson basado en modelos.</p>
 </div>
 
-## Instalacion:
-
+# Instalación:
 ```shell
 npm install bsondb --save
 ```
 
-## Tabla de contenido
-*   [Introduccion](#Introduccion)
-*   [Schema](#Schema)
-*   [Model](#Model)
-    *   [`buildModel`](#buildModel)     
-    *   [`findOne`](#findOne)  
-    *   [`filter`](#filter)
-    *   [`remove`](#remove)
-*   [`save`](#save)
+# Tabla de Contenidos
+* [Introducción](#Introducción)
+* [Documentación](#Documentación)
+  * [Schema](#Schema)
+  * [Model](#Model)
+    * [buildModel](#buildModel)
+		 * [`save`](#save)
+    * [`findOne`](#findOne)
+    * [`filter`](#filter)
+    * [`remove`](#remove)
+* [Notas](#notas)
 
-## Introduccion
-<a name="Introduccion" />
+# Introducción
+<a name="Introducción"></a>
 
-**bsonDB** usa **bson** (valga la redundancia) y se basa en modelos **(tipos de datos)**, por ahora solo cuenta con una base de datos local pero se tiene pensado implementar una base de datos en red al igual que mas metodos.
+**bsonDB** usa JSON binario y se desarrolla entorno a modelos **(estructuras lógicas)** para realizar acciones dentro de la base de datos.
+Por ahora sólo cuenta con bases de datos locales pero se tiene pensado implementar una base de datos en red al igual que implementar más métodos.
 
-Antes de usar esto se recomienda tener un previo conocimiento de los tipos de datos **(string, number, etc)**
+**Antes de usar bsonDB se recomienda tener conocimiento sobre los [tipos de datos primitivos de JavaScript](https://developer.mozilla.org/es/docs/Web/JavaScript/Data_structures).**
 
+# Documentación
+<a name="Documentación"></a>
 
-## Schema
-<a name="Schema" />
+A continuación está la documentación de bsonDB. Para poder explicar de mejor manera la documentación, se asumirá que usted tiene definido a bsonDB así:
 
 ```js
-Schema(schema)
+const DB = require('bsondb');
 ```
 
-Este constructor te servirá para crear SchemaTypes la cual servira como un identificador de propiedades y el tipo de valor que se almacenará.
-
-Actualmente solo cuenta con 5 tipos de valores:
-
-- String
-- Number
-- Object
-- Array
-- Boolean
-
-Debes de colocar uno de estos tipos de valores en caso de que una propiedad directamente reciba un valor, en el caso de que una propiedad sea un objeto, debes de colocar la propiedad **"type"** indicando como valor **Object**, esto es obligatorio.
-
-Parametros | Descripcion
---- | ---
-`schema` | Aqui deberá de ir un **objeto** con el nombre de las propiedades y sus respectivos tipos de valores que almacenará.
-
-
-Por ejemplo:
+## **Schema**
+<a name="Schema"></a>
 
 ```js
-const bsonDB = require("bsondb");
+new DB.Schema(schema);
+```
 
-let SchemaNivel = new bsonDB.Schema({
+Este constructor crea la estructura (propiedades y tipos de valores[*](#TDV) de éstas) de los datos que se almacenarán.
+
+| Parametro | Tipo | Opcional | Descripción |
+| :---: | :-----: | :---: | :--- |
+| **`schema`** | Object | No | Un **objeto** con el nombre de las propiedades y sus respectivos tipos de valores que almacenará. |
+
+
+
+
+### **Ejemplos**
+
+```js
+const DB = require('bsondb');
+
+let SchemaNivel = new DB.Schema({
   id: String,
   nivel: Number,
   xp: Number
-})
+});
+```
+```js
+const DB = require('bsondb');
 
-
-//Ejemplo 2 usando mas cosas:
-
-let SchemaPerfil = new bsonDB.Schema({
+let SchemaPerfil = new DB.Schema({
   id: String,
   nivel: Number,
   monedas: Number,
@@ -74,11 +76,12 @@ let SchemaPerfil = new bsonDB.Schema({
     cantidad: Number,
     nombres: Array
   }
-})
+});
+```
+```js
+const DB = require('bsondb');
 
-//Ejemplo 3 usando mas cosas:
-
-let SchemaGuild = new bsonDB.Schema({
+let SchemaGuild = new DB.Schema({
   id: String,
   descripcion: String,
   usuarios: Number,
@@ -94,258 +97,289 @@ let SchemaGuild = new bsonDB.Schema({
     }
   },
   verificado: Boolean
-})
+});
 ```
 
-**Retorna** - Un Schema que sera usado en el constructor [Model](#Model)
+**@ Valor de Retorno** ── Un Schema que sera usado en el constructor [Model](#Model).
 
 
-## Model
-<a name="Model" />
+## **Model**
+<a name="Model"></a>
 
 ```js
-Model(nombre_db, schema, directorio)
+new DB.Model(nombreDB, schema, directorio)
 ```
 
-Este constructor crea la base de datos y inicializa su [Schema](#Schema) respectivo.
+Este constructor crea un modelo que se utilizará para guardar (o hacer cualquier otra acción) en/con la base de datos con su [Schema](#Schema) (estructura) respectivo.
 
-Parametros | Descripcion
---- | ---
-`nombre_db` | Aqui deberá de ir el nombre con el cual se guardará la base de datos.
-`schema` | Aqui deberás de ir el [Schema](#Schema) que usará el Modelo.
-`directorio` | Aqui deberá de ir el directorio donde se guardará la base de datos, si el nombre del directorio no existe, lo que hará es crear una carpeta llamada **bsonDB** y dentro de esa carpeta estará la base de datos que indicaste en **nombre_db**
+| Parametro | Tipo | Opcional | Descripción |
+| :---: | :---: | :---: | :--- |
+| `nombreDB` | String | No | Nombre de la base de datos. |
+| `schema` | [Schema](#Schema) | No | El [Schema](#Schema) que usará el modelo. |
+| `directorio` | String | Sí | Nombre del directorio donde se guardará la base de datos. Si el directorio no existe, se creará una carpeta llamada **bsonDB** y dentro de esa carpeta estará la base de datos que indicaste en **nombreDB**. |
 
-
-
-Ejemplo:
+### **Ejemplo**
 
 ```js
-const bsonDB = require("bsondb");
+const DB = require('bsondb');
 
-let SchemaNivel = new bsonDB.Schema({
+let SchemaNivel = new DB.Schema({
   id: String,
   nivel: Number,
   xp: Number
-})
+});
 
-//Ejemplo en el caso de que quieras exportar el Modelo (supongamos que este archivo se llama NivelSchema.js).
-module.exports = new bsonDB.Model("Niveles", SchemaNivel) //No coloco nada en el tercer parametro ya que quiero que se guarde en la carpeta default "bsonDB"
-//Ahora solo lo llamarias en otro archivo, exp: let NivelModel = require("./nivelSchema.js")
+// Si quieres exportar el modelo.
+module.exports = new DB.Model('Niveles', SchemaNivel);
 
+// Si quieres utilizarlo dentro del mismo archivo.
+const NivelModel = new DB.Model('Niveles', SchemaNivel);
 
-//Ejemplo en el caso de que quieras usarlo en el mismo archivo del Modelo.
-let NivelModel = new bsonDB.Model("Niveles", SchemaNivel)
+/**
+ * Se creará un archivo llamado "Niveles.bson" en la carpeta que especificaste.
+ * Si no especificaste una carpeta, se guardará en la carpeta "bsonDB".
+ * /
 ```
 
-Esto hará que se cree un archivo llamado **Niveles.bson** en el lugar donde especificaste (recuerda no borrarlo a menos de que quieras borrar absolutamente todos los datos que contiene, tampoco es recomendable manejar el archivo manualmente)
+**@ Valor de Retorno** ── Una clase con los métodos que se verán a continuación.
 
-Este constructor contiene metodos las cuales veremos a continuacion.
-
-#### buildModel
-<a name="buildModel" />
+### Model#buildModel
+<a name="buildModel"></a>
 
 ```js
-buildModel(objeto)
+Model.buildModel(objeto);
 ```
 
-Este metodo te permite crear un nuevo Modelo tomando en cuenta las propiedades y tipos de valores que especificaste en su [Schema](#Schema)
-
-Recuerda que aqui debe ir un objeto con las mismas propiedades que colocaste en su Schema, al igual que sus tipo de valores correspondientes, ya no hace falta colocar String, Number, etc, ahora deberas de colocar los datos que se almacenaran en la base de datos.
-
-Debes de colocar todas las propiedades que colocaste en el Schema, esto es sensitivo y respeta la cantidad, nombre y valor de todas propiedades.
+Crea un nuevo modelo basado en las propiedades y tipos de valores que especificaste en su [Schema](#Schema).
+El objeto tiene que tener las mismas propiedades que hay en el Schema del modelo, y los valores de las propiedades tienen que tener el mismo tipo de valor especificado en el Schema.
 
 Puede ocurrir un error en los siguientes casos:
 
-- Si no colocas una propiedad (te falta una propiedad del Schema)
-- Si colocas una propiedad de mas (que no se encuentra en el Schema)
-- Si el tipo de valor es diferente al tipo de valor que especificaste en el Schema.
+- No colocas una(s) propiedad(es) del Schema.
+- Colocas una(s) propiedad(es) extra(s) (que no están en el Schema).
+- Si el tipo de valor de una propiedad es diferente al tipo de valor que especificaste en el Schema.
 
-(Se mostrará un mensaje indicando que no hay coincidencia entre ambas cosas)
-
-Esto retorna los datos convertidos(objeto), cuenta con un metodo llamado **save()** ([click_aqui](#save) para ver su funcion)
-
-Parametros | Descripcion
---- | ---
-`objeto` | Aqui deberá de ir un objeto con los datos que se mencionó arriba.
+| Parametro | Tipo | Opcional | Descripción |
+| :---: | :---: | :---: | :--- |
+| `objeto` | Object | No | Un objeto basado en el Schema. |
 
 
-**Retorna** - El objeto y un metodo llamado [save](#save)
-
-Ejemplo:
+### **Ejemplo**
 
 ```js
-const bsonDB = require("bsondb");
+const DB = require('bsondb');
 
-let SchemaReporte = new bsonDB.Schema({
+let SchemaReporte = new DB.Schema({
   id: String,
   usuario: String,
-  razon: String
-})
+	razon: String,
+	autor: {
+		type: Object,
+		id: String,
+		usuario: String
+	}
+});
 
-let ReporteModel = new bsonDB.Model("Reportes", SchemaReporte)
+const ReporteModel = new DB.Model('Reportes', SchemaReporte);
 
 let NuevoReporte = ReporteModel.buildModel({
-  id: "129934939493934",
-  usuario: "MegaStar",
-  razon: "wapo"
-})
+	id: '292092693377712128',
+	usuario: 'MegaStar',
+	razon: 'wapo',
+	autor: {
+		id: '372466760848244736',
+		usuario: 'iBisho'
+	}
+});
 
-console.log(NuevoReporte) // {id: "129934939493934", usuar...}
-NuevoReporte.save()
-  .then(data => console.log(data)) //Si los datos se guardaron correctamente, regresa el objeto guardado
-  .catch(error => console.log(error)) //Si no se guardaron los datos (ocurrio un error)
+console.log(NuevoReporte); // { id: "292092693377712128", usuario... }
 ```
 
+**@ Valor de Retorno** ── El objeto creado con un método [`save`](#Save).
 
-#### findOne
-<a name="findOne" />
+### **Modelo#save()**
+<a name="save"></a>
 
 ```js
-findOne(filtro, callback)
+Modelo.save();
+```
+
+Sirve para guardar o actualizar datos en la base de datos. Sólo funciona en el valor de retorno del métodos [Model#buildModel](#buildModel) y [Model#findOne](#findOne).
+
+#### **Ejemplo**
+
+```js
+const DB = require('bsondb');
+
+let SchemaReporte = new DB.Schema({
+  id: String,
+  usuario: String,
+	razon: String,
+	autor: {
+		type: Object,
+		id: String,
+		usuario: String
+	}
+});
+
+const ReporteModel = new DB.Model('Reportes', SchemaReporte);
+
+let NuevoReporte = ReporteModel.buildModel({
+	id: '292092693377712128',
+	usuario: 'MegaStar',
+	razon: 'wapo',
+	autor: {
+		id: '372466760848244736',
+		usuario: 'iBisho'
+	}
+});
+
+NuevoReporte.save()
+  .then(data => console.log(data)) // Regresa el objeto guardado.
+  .catch(error => console.log(error)); // Si no se guardaron los datos y hubo un error.
+```
+
+**@ Promesa**<br />
+**@ Valor de Retorno** ── Promesa. Si los datos fueron guardados correctamente, retorna los datos guardados (then). Si ocurrió un error, retorna un error (catch).
+
+### Model#findOne
+<a name="findOne"></a>
+
+```js
+Model.findOne(filtro, callback);
 ```
 
 Este metodo te permite buscar un dato especifico en la base de datos, el dato encontrado puede ser modificado y guardado.
 
-Parametros | Descripcion
---- | ---
-`filtro` | Aqui deberá de ir el filtro que se usará para buscar el dato en la base de datos.
-`callback` | Aqui deberá de ir una funcion con un parametro, este parametro tendra como valor el dato encontrado **(objeto)** y en el caso de que no encuentre nada regresará **undefined**
+| Parametro | Tipo | Opcional | Descripcion |
+| :---: | :---: | :---: | :--- |
+| `filtro` | Function | No | El filtro que se usará para buscar el modelo en la base de datos. |
+| `callback` | Function | No | Una función que se usará cuando se complete la búsqueda, tiene sólo 1 argumento. Si se encontró el modelo, el argumento será los datos del modelo. En el caso contrario será **undefined**. |
 
-
-En el caso de que el parametro del callback contenga algo, podras modificar sus valores, debes de usar solo las propiedades que colocaste en el Schema, esto es sensitivo y respeta el nombre y valor de todas propiedades.
+Puedes modificar los valores del objeto retornado (si es que hay) del callback, pero sólo las que hay en el Schema, respetando los tipos de valores y propiedades.
 
 Puede ocurrir un error en los siguientes casos:
 
-- Si creas una propiedad de mas (que no se encuentra en el Schema)
-- Si el tipo de valor de la propiedad que actualizaras es diferente al tipo de valor que especificaste en el Schema.
+- Creas una(s) propiedad(es) extra(s) (que no están en el Schema)
+- El tipo de valor de la propiedad que actualizas es diferente al tipo de valor que especificaste en el Schema.
 
-(Se mostrará un mensaje indicando que no hay coincidencia entre ambas cosas)
+El valor del argumento del callback cuenta con el método [**`save()`**](#save).
 
-El valor del parametro del callback cuenta con un metodo llamado **save()** ([click_aqui](#save) para ver su funcion)
-
-Ejemplo:
+#### **Ejemplo**
 
 ```js
-const bsonDB = require("bsondb");
+const DB = require('bsondb');
 
-//Creamos el Schema para el Nivel
-let SchemaNivel = new bsonDB.Schema({
+let SchemaNivel = new DB.Schema({
   id: String,
   nivel: Number,
   xp: Number
-})
+});
 
-//Creamos la base de datos y inicializamos su schema (SchemaNivel)
-let NivelModel = new bsonDB.Model("Niveles", SchemaNivel)
+let NivelModel = new DB.Model('Niveles', SchemaNivel)
+let randomXP = Math.floor(Math.random() * 10) + 1;
 
-let randomxp = Math.floor(Math.random() * 10) + 1
-
-NivelModel.findOne((f) => f.id == "algunaID", (datos) => {
-  if(!datos) { //Creamos un Modelo si no se encontró nada
+NivelModel.findOne((modelo) => modelo.id == 'algunaID', (datos) => {
+  // Creamos el modelo si no se encontró nada.
+  if (!datos) {
     let NuevoModelo = NivelModel.buildModel({
-      id: "algunaID",
+      id: 'algunaID',
       nivel: 1,
       xp: randomxp
-    })
-    NuevoModelo.save().catch(error => console.log(error)) //Lo guardamos en la base de datos
+    });
+		
+    NuevoModelo.save().catch(error => console.log(error)); // Lo guardamos en la base de datos.
+  //Si se encontró.
+  } else {
+    if ((datos.xp + randomxp) >= 30) {
+      ++datos.nivel; //Le damos +1 a su nivel.
+      datos.xp = 0; //Actualizamos su xp a 0.
+      datos.save(); //Guardamos los cambios en la base de datos.
+        .then(nuevosDatos => console.log(`¡Subiste al nivel ${nuevosDatos.nivel}!`))
+        .catch(error => console.log(error));
+    //Si el xp ganado no es suficiente para subir de nivel, sólo le aumentamos el xp.
+    } else {
+      datos.xp += randomxp;
+      datos.save().catch(error => console.log(error)) //Guardamos los cambios en la base de datos.
+    }
   }
-  else { //Si se encontró
-    if((datos.xp+randomxp) >= 30) { //Le subimos +1 nivel
-      datos.nivel = datos.nivel + 1 //Le damos +1 a su nivel
-      datos.xp = 0 //Actualizamos su xp a 0
-      datos.save() //Guardamos los cambios en la base de datos
-      .then(nuevo_dato => console.log(`Subiste al nivel ${nuevo_dato.nivel}!`))
-      .catch(error => console.log(error))
+});
+```
+
+**@ Valor de Retorno** ── Nada, es un callback.
+
+### Model#filter
+<a name="filter"></a>
+
+```js
+Model.filter(filtro, callback)
+```
+
+Busca todos los modelos que coincidan con lo que especificaste en el filtro.
+
+| Parametro | Tipo | Opcional | Descripcion |
+| :---: | :---: | :---: | :--- |
+| `filtro` | Function | No | El filtro que se usará para buscar los modelos en la base de datos. |
+| `callback` | Function | No | Una función que se usará cuando se complete la búsqueda, tiene sólo 1 argumento. Si se encontraron modelos, el argumento será un **Array** de modelos coincidentes. En el caso contrario será **undefined**.
+
+Cada modelo dentro del Array cuenta con el método [`save`](#save).
+
+#### **Ejemplo**
+
+```js
+NivelModel.filter((modelo) => modelo.nivel > 1, (datos) => { // Filtra niveles mayores a 1.
+  // Si no se encontró nada.
+  if (!datos) {
+    console.log('No se encontró nada.');
+  } else { // Si se encontró. ([{...},{...},{...},...])
+    let usuarios = [];
+    for (let x = 0; x < datos.length; x++) {
+      usuarios.push(`ID: ${datos[x].id}, Nivel: ${datos[x].nivel}, XP: ${datos[x].xp}`);
     }
-    else { //Si el xp ganado no es suficiente para subir de nivel, solo le aumentamos el xp
-      datos.xp = datos.xp + randomxp
-      datos.save().catch(error => console.log(error)) //Guardamos los cambios en la base de datos
-    }
+    console.log(usuarios.join("\n"));
+  }
+});
+```
+
+**@ Valor de Retorno** ── Nada, es un callback.
+
+### Model#remove
+<a name="remove"></a>
+
+```js
+Model.remove(filtro, callback);
+```
+
+Elimina un modelo (que coincida con el filtro) de la base de datos.
+
+| Parametro | Tipo | Opcional | Descripcion |
+| :---: | :---: | :---: | :--- |
+| `filtro` | Function | No | El filtro que se usará para buscar el modelo en la base de datos. |
+| `callback` | Function | No | Una función que se usará cuando se complete la búsqueda, tiene sólo 1 argumento. Si se encontró un modelo, el argumento será el modelo eliminado. En el caso contrario será **undefined**.
+
+
+#### **Ejemplo**
+
+```js
+NivelModel.remove((modelo) => modelo.id == 'algunaID', (eliminado) => {
+  // Si no se encontró nada.
+  if (!eliminado) {
+    console.log('No se encontró nada para borrar.');
+  // Si se encontró y se eliminó.
+  } else {
+    console.log(`Se eliminó el modelo con ID ${eliminado.id}, su nivel era: ${eliminado.nivel}`);
   }
 })
 ```
+**@ Valor de Retorno** ── Nada, es un callback.
 
+## **Notas**
+<a name="notas"></a>
 
-#### filter
-<a name="filter" />
+En BsonDB sólo puedes usar 5 tipos de valores para los Schemas (estructuras).
 
-```js
-filter(filtro, callback)
-```
-
-Este metodo te permite buscar todos los datos que coincidan con lo que especificaste en el filtro.
-
-Esto retorna un **Array** con los objetos encontrados, de lo contrario(si no encuentra nada) retorna **undefined**.
-
-Parametros | Descripcion
---- | ---
-`filtro` | Aqui deberá de ir el filtro que se usará para buscar los datos en la base de datos.
-`callback` | Aqui deberá de ir una funcion con un parametro, este parametro tendra como valor los datos encontrados **(Array)** y en el caso de que no encuentre nada regresará **undefined**
-
-
-Ejemplo:
-
-```js
-NivelModel.filter((f) => f.nivel > 1, (datos) => { //El filtro quiere decir que obtendra todos los datos que contengan un nivel mayor a 1
-  if(!datos) { //Si no se encontró nada
-    console.log("No se encontró nada.")
-  }
-  else { //Si se encontró [{...},{...},{...}...]
-    let usuarios = []
-    for(var x = 0; x < datos.length; x++) {
-      usuarios.push(`ID: ${datos[x].id}, Nivel: ${datos[x].nivel}, Xp: ${datos[x].xp}`)
-    }
-    console.log(usuarios.join("\n"))
-  }
-})
-```
-
-
-#### remove
-<a name="remove" />
-
-```js
-remove(filtro, callback)
-```
-
-Este metodo te permite eliminar un dato(que coincida con el filtro que especificaste) de la base de datos.
-
-Esto retorna el dato eliminado **objeto**, de lo contrario(si no encuentra nada) retorna **undefined**.
-
-Parametros | Descripcion
---- | ---
-`filtro` | Aqui deberá de ir el filtro que se usará para buscar y eliminar el datos en la base de datos.
-`callback` | Aqui deberá de ir una funcion con un parametro, este parametro tendra como valor el dato eliminado **(objeto)** y en el caso de que no encuentre nada regresará **undefined**
-
-
-Ejemplo:
-
-```js
-NivelModel.remove((f) => f.id == "algunaID", (eliminado) => {
-  if(!datos) { //si no se encontró nada
-    console.log("No se encontró nada.")
-  }
-  else { //Si se encontró y se eliminó
-    console.log(`Se eliminó los datos del ID ${eliminado.id}, su nivel era: ${eliminado.nivel}`)
-  }
-})
-```
-
-#### save
-<a name="save" />
-
-```js
-save()
-```
-
-Este metodo solo funciona en el valor de retorno del metodo [buildModel](#buildModel) y [findOne](#findOne).
-
-Esto sirve para guardar los nuevos datos y los datos actualizados.
-
-Esto retorna una promesa con el objeto actualizado, en el caso de que ocurra un error retornara el error.
-
-Ejemplo:
-
-```js
-<>.save().then(nuevos_datos => console.log(nuevos_datos)).catch(error => console.log(error))
-```
+- String
+- Number
+- Object
+- Array
+- Boolean
