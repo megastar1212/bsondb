@@ -18,7 +18,7 @@ npm install bsondb --save
     * [`findOne`](#findOne)
     * [`filter`](#filter)
     * [`remove`](#remove)
-* [Notas](#Notas)
+* [Notas](#notas)
 
 # Introducción
 <a name="Introducción"></a>
@@ -239,7 +239,7 @@ NuevoReporte.save()
   .catch(error => console.log(error)); // Si no se guardaron los datos y hubo un error.
 ```
 
-**@ Promesa**
+**@ Promesa**<br />
 **@ Valor de Retorno** ── Promesa. Si los datos fueron guardados correctamente, retorna los datos guardados (then). Si ocurrió un error, retorna un error (catch).
 
 ### Model#findOne
@@ -372,3 +372,14 @@ NivelModel.remove((modelo) => modelo.id == 'algunaID', (eliminado) => {
 })
 ```
 **@ Valor de Retorno** ── Nada, es un callback.
+
+## **Notas**
+<a name="notas"></a>
+
+En BsonDB sólo puedes usar 5 tipos de valores para los Schemas (estructuras).
+
+- String
+- Number
+- Object
+- Array
+- Boolean
