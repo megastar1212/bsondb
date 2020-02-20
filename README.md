@@ -18,6 +18,7 @@ npm install bsondb --save
     * [`findOne`](#findOne)
     * [`filter`](#filter)
     * [`remove`](#remove)
+    * [`all`](#all)    
 * [Notas](#notas)
 
 # Introducción
@@ -138,7 +139,7 @@ const NivelModel = new DB.Model('Niveles', SchemaNivel);
 /**
  * Se creará un archivo llamado "Niveles.bson" en la carpeta que especificaste.
  * Si no especificaste una carpeta, se guardará en la carpeta "bsonDB".
- * /
+**/
 ```
 
 **@ Valor de Retorno** ── Una clase con los métodos que se verán a continuación.
@@ -287,7 +288,7 @@ NivelModel.findOne((modelo) => modelo.id == 'algunaID', (datos) => {
       nivel: 1,
       xp: randomxp
     });
-		
+
     NuevoModelo.save().catch(error => console.log(error)); // Lo guardamos en la base de datos.
   //Si se encontró.
   } else {
@@ -302,6 +303,38 @@ NivelModel.findOne((modelo) => modelo.id == 'algunaID', (datos) => {
       datos.xp += randomxp;
       datos.save().catch(error => console.log(error)) //Guardamos los cambios en la base de datos.
     }
+  }
+});
+```
+
+**@ Valor de Retorno** ── Nada, es un callback.
+
+### Model#all
+<a name="all"></a>
+
+```js
+Model.all(callback);
+```
+
+Este metodo te permite obtener todos los datos de la base de datos.
+
+| Parametro | Tipo | Opcional | Descripcion |
+| :---: | :---: | :---: | :--- |
+| `callback` | Function | No | Una función que se usará cuando se complete la búsqueda, tiene sólo 1 argumento. Si se encontraron modelos, el argumento será un **Array** con todos los modelos existentes. En el caso contrario será **undefined**.
+
+#### **Ejemplo**
+
+```js
+NivelModel.all((datos) => {
+  // Si no se encontró nada.
+  if (!datos) {
+    console.log('No hay ningun dato.');
+  } else { // Si se encontró. ([{...},{...},{...},...])
+    let usuarios = []
+    for (let x = 0; x < datos.length; x++) {
+      usuarios.push(`ID: ${datos[x].id}, Nivel: ${datos[x].nivel}, XP: ${datos[x].xp}`);
+    }
+    console.log(usuarios.join("\n"));
   }
 });
 ```
