@@ -73,9 +73,11 @@ class Model {
   }
 
 
-
-
-
+  all(callback) {
+    if(!callback || typeof callback != "function") throw new BsonError("Model", "[all] El parametro debe ser un callback(funcion).")
+    if(global_db[this.db_name].length <= 0) return callback(undefined)
+    return callback(cloneArray(global_db[this.db_name]))
+  }
 
 
 
